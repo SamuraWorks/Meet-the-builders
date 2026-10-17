@@ -70,7 +70,7 @@ export default function StepChild() {
             className="mf-input"
             id="childAge"
             type="number"
-            min={7}
+            min={4}
             max={17}
             step={1}
             inputMode="numeric"

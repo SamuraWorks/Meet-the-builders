@@ -44,7 +44,7 @@ export default function GetStartedPage() {
                 &#10003;
               </span>
               <span>
-                <strong>Parent or guardian details</strong> — so we can contact you about the meetup
+                <strong>Parent or guardian details</strong> — so we can contact you about Robotics Day
               </span>
             </li>
             <li>
