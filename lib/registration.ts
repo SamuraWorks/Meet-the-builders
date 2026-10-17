@@ -62,7 +62,7 @@ export const HEARD_FROM_OPTIONS = [
   'WhatsApp',
   'School',
   'Friend/Family',
-  'Future Builders Academy',
+  'Builda',
   'Elimora Girls Foundation',
   'Freetown Innovation Lab',
   'Other',
@@ -125,7 +125,8 @@ export function validateParent(state: RegistrationState): Errors {
   if (state.relationship === 'Other' && !state.otherRelationship.trim())
     errors.otherRelationship = 'Please specify the relationship.'
   const email = state.email.trim()
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'Enter a valid email address.'
+  if (!email) errors.email = 'Email address is required so we can send your confirmation.'
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'Enter a valid email address.'
   return errors
 }
 

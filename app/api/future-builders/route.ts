@@ -58,7 +58,8 @@ function validate(data: Record<string, unknown>): string | null {
   if (f('heardFrom') === 'Other' && !f('otherHeardFrom')) return 'Please specify how you heard about us.'
 
   const email = f('email')
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Enter a valid email address.'
+  if (!email) return 'Email address is required so we can send your confirmation.'
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Enter a valid email address.'
 
   if (!str(data.pdfBase64)) return 'Application PDF is missing.'
 
@@ -171,7 +172,8 @@ export async function POST(request: Request) {
     const rows = buildRows(data)
 
     await transporter.sendMail({
-      from: `"Future Builders Academy" <${user}>`,
+      from: `"Builda Robotics Day" <${user}>`,
+      replyTo: answers.email,
       to: RECIPIENT,
       subject: `Meet the Builders Registration — ${childName}`,
       text: buildPlain(rows),
@@ -184,16 +186,15 @@ export async function POST(request: Request) {
       ],
     })
 
-    const email = str(answers.email)
-    if (email) {
-      await transporter.sendMail({
-        from: `"Future Builders Academy" <${user}>`,
+const email = str(answers.email)
+    await transporter.sendMail({
+        from: `"Builda Robotics Day" <${user}>`,
+        replyTo: RECIPIENT,
         to: email,
         subject: 'APPLICATION RECEIVED! — Builda Robotics Day 2026',
         text: `REGISTRATION RECEIVED!\n\nHi ${str(answers.parentName) || 'there'},\n\nThank you for applying for Builda Meet the Builders — Robotics Day. Your application has been received.\n\nSaturday, 31 October 2026\n10:00 AM\nFreetown Innovation Lab, opposite FBC Field\n\nPAY AS YOU CAN\n\nPlease arrive a little early for registration.\n\n— Builda`,
         html: buildConfirmationHtml(answers),
       })
-    }
 
     return Response.json({ ok: true })
   } catch (error) {

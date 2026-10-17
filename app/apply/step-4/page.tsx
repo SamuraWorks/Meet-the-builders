@@ -83,7 +83,7 @@ export default function StepConsent() {
       </div>
 
       <div className="mf-note">
-        By continuing, your information is sent to the Future Builders Academy team by email and used only
+        By continuing, your information is sent directly to the Builda team by email and used only
         to process this registration and keep your child safe at the event.
       </div>
     </StepShell>
