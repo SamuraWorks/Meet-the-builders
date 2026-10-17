@@ -1,18 +1,7 @@
+import Link from 'next/link'
 import { Brand } from './brand'
+import { EVENT } from '@/lib/event'
 
 export function Footer() {
-  return (
-    <footer className="fb-footer">
-      <div className="fb-footer-in">
-        <Brand href="/" />
-        <p>
-          A day of games, building, problem solving and teamwork for young builders ages 7–17.
-        </p>
-        <a className="fb-footer-mail" href="mailto:academyfuturebuilders@gmail.com">
-          academyfuturebuilders@gmail.com
-        </a>
-      </div>
-      <div className="fb-footer-bottom">© {new Date().getFullYear()} Future Builders Academy</div>
-    </footer>
-  )
+  return <footer className="site-footer"><div className="footer-grid"><div><Brand href="/" /><p className="footer-tagline">{EVENT.tagline}.</p></div><div><h2>Explore</h2><Link href="/#about">About Builda</Link><Link href="/#activities">Activities</Link><Link href="/#details">Event details</Link></div><div><h2>Get in touch</h2>{EVENT.contacts.map((contact) => <a key={contact} href={`tel:${contact.replaceAll(' ', '')}`}>{contact}</a>)}<span>{EVENT.shortVenue}</span></div></div><div className="footer-bottom"><span>© {new Date().getFullYear()} Builda</span><span>{EVENT.name}</span></div></footer>
 }

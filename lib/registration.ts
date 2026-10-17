@@ -109,7 +109,7 @@ export function validateChild(state: RegistrationState): Errors {
   if (!ageText) errors.childAge = "Child's age is required."
   else {
     const age = Number(ageText)
-    if (!Number.isInteger(age) || age < 1 || age > 17) errors.childAge = 'Age must be a number from 1 to 17.'
+    if (!Number.isInteger(age) || age < 4 || age > 17) errors.childAge = 'Age must be a number from 4 to 17.'
   }
   if (!state.gender) errors.gender = 'Please choose a gender.'
   if (!state.school.trim()) errors.school = 'School is required.'
