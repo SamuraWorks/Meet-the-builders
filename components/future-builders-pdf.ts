@@ -1,299 +1,82 @@
+'use client'
+
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
+
 export type FbAnswers = Record<string, string>
 
-const X = 48
-const W = 499.28
-const BOTTOM = 782
-const TOP = 50
+const TEMPLATE_URL = '/MeetTheBuilders_Registration_Template.pdf'
 
-function loadJspdf(): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const w = window as any
-    if (w.jspdf && w.jspdf.jsPDF) return resolve(w.jspdf.jsPDF)
-    const s = document.createElement('script')
-    s.src = '/vendor/jspdf.umd.min.js'
-    s.onload = () => (w.jspdf && w.jspdf.jsPDF ? resolve(w.jspdf.jsPDF) : reject(new Error('jspdf load error')))
-    s.onerror = () => reject(new Error('Could not load the PDF generator'))
-    document.head.appendChild(s)
-  })
+function value(answers: FbAnswers, key: string): string {
+  const raw = String(answers[key] ?? '').trim()
+  return raw === 'on' ? 'Yes' : raw
 }
 
-function any(val: string | undefined): string {
-  if (!val) return ''
-  const v = String(val).trim()
-  return v === 'on' ? 'Yes' : v
+function safeFilename(answers: FbAnswers): string {
+  return value(answers, 'childName').replace(/[^\w- ]+/g, '').trim().replace(/\s+/g, '_') || 'Child'
 }
 
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer)
+function draw(pdfPage: any, font: any, text: string, x: number, y: number, size = 9) {
+  if (!text) return
+  pdfPage.drawText(text, { x, y, size, font, color: rgb(0.05, 0.05, 0.05), maxWidth: 470 })
+}
+
+function checkbox(pdfPage: any, text: string, x: number, y: number, selected: boolean, font: any) {
+  if (!selected) return
+  pdfPage.drawText('X', { x, y, size: 9, font, color: rgb(0.05, 0.05, 0.05) })
+}
+
+export async function buildRegistrationPdf(answers: FbAnswers): Promise<Uint8Array> {
+  const response = await fetch(TEMPLATE_URL)
+  if (!response.ok) throw new Error('Could not load the registration form template')
+
+  const pdf = await PDFDocument.load(await response.arrayBuffer())
+  const page = pdf.getPages()[0]
+  const font = await pdf.embedFont(StandardFonts.Helvetica)
+  const bold = await pdf.embedFont(StandardFonts.HelveticaBold)
+
+  // Coordinates follow the blank registration template (PDF origin is bottom-left).
+  draw(page, bold, value(answers, 'childName'), 86, 675)
+  draw(page, font, value(answers, 'childAge'), 86, 648)
+  draw(page, font, value(answers, 'gender'), 315, 648)
+  draw(page, font, value(answers, 'school'), 86, 621)
+  draw(page, font, value(answers, 'interests'), 86, 584, 8)
+  draw(page, font, value(answers, 'otherInterest'), 86, 548)
+
+  draw(page, bold, value(answers, 'parentName'), 86, 494)
+  draw(page, bold, value(answers, 'parentPhone'), 86, 467)
+  draw(page, bold, value(answers, 'whatsapp'), 86, 440)
+  draw(page, font, value(answers, 'relationship'), 86, 400)
+  draw(page, font, value(answers, 'otherRelationship'), 86, 373)
+  draw(page, font, value(answers, 'email'), 86, 346)
+
+  draw(page, font, value(answers, 'medical'), 86, 305)
+  draw(page, font, value(answers, 'medicalExplain'), 86, 270, 8)
+
+  checkbox(page, 'X', 49, 215, value(answers, 'consent') === 'Yes', font)
+  draw(page, font, value(answers, 'photoConsent'), 86, 182, 8)
+  draw(page, font, value(answers, 'heardFrom'), 86, 128, 8)
+  draw(page, font, value(answers, 'otherHeardFrom'), 86, 92, 8)
+
+  return pdf.save()
+}
+
+export async function buildRegistrationPdfBase64(answers: FbAnswers): Promise<string> {
+  const bytes = await buildRegistrationPdf(answers)
   let binary = ''
-  const chunk = 0x8000
-  for (let i = 0; i < bytes.length; i += chunk) {
-    binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)))
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
   }
   return btoa(binary)
 }
 
-export async function buildRegistrationPdfBase64(answers: FbAnswers): Promise<string> {
-  const jsPDF = await loadJspdf()
-  const doc = buildRegistrationPdf(jsPDF, answers)
-  return arrayBufferToBase64(doc.output('arraybuffer') as ArrayBuffer)
-}
-
 export async function downloadRegistrationPdf(answers: FbAnswers): Promise<void> {
-  const jsPDF = await loadJspdf()
-  const doc = buildRegistrationPdf(jsPDF, answers)
-  const childName = any(answers.childName).replace(/[^\w- ]+/g, '').trim().replace(/\s+/g, '_')
-  const url = URL.createObjectURL(doc.output('blob'))
+  const bytes = await buildRegistrationPdf(answers)
+  const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }))
   const link = document.createElement('a')
   link.href = url
-  link.download = `${childName || 'Child'}_MeetTheBuilders_Registration.pdf`
+  link.download = `${safeFilename(answers)}_MeetTheBuilders_Registration.pdf`
   document.body.appendChild(link)
   link.click()
   link.remove()
   URL.revokeObjectURL(url)
-}
-
-export function buildRegistrationPdf(jsPDF: any, answers: FbAnswers) {
-  const doc = new jsPDF({ unit: 'pt', format: 'a4' })
-  let y = TOP
-
-  const drawFooter = () => {
-    const page = doc.internal.getNumberOfPages()
-    doc.setDrawColor(0)
-    doc.setLineWidth(0.7)
-    doc.line(X, 40, X + W, 40)
-    doc.setTextColor(0)
-    doc.setFont('times', 'normal')
-    doc.setFontSize(8.5)
-    doc.text('Builda \u2022 academyfuturebuilders@gmail.com', X + W / 2, 806, { align: 'center' })
-    doc.text(`Page ${page}`, X + W / 2, 818, { align: 'center' })
-    doc.setTextColor(0)
-    doc.setFontSize(10)
-  }
-  const drawContinuationHeader = () => {
-    drawFooter()
-    doc.setDrawColor(0)
-    doc.setFont('times', 'bold')
-    doc.setFontSize(10.5)
-    doc.text('Builda', X, 32)
-    doc.text('MEET THE BUILDERS \u2014 REGISTRATION FORM', X + W, 32, { align: 'right' })
-    doc.setLineWidth(0.7)
-    doc.line(X, 40, X + W, 40)
-    y = 54
-  }
-  const newPage = () => {
-    doc.addPage()
-    drawContinuationHeader()
-  }
-  const space = (h: number) => {
-    if (y + h > BOTTOM) newPage()
-  }
-
-  // Page 1 header
-  doc.setDrawColor(0)
-  doc.setLineWidth(0.8)
-  doc.setFont('times', 'bold')
-  doc.setFontSize(15)
-  doc.text('Builda', X + W / 2, 46, { align: 'center' })
-  doc.setFontSize(13)
-  doc.text('MEET THE BUILDERS \u2014 REGISTRATION FORM', X + W / 2, 62, { align: 'center' })
-  doc.setFont('times', 'italic')
-  doc.setFontSize(10)
-  doc.text('Saturday, 31 October 2026 \u2022 10:00 AM \u2022 Freetown Innovation Lab, Opposite FBC Field', X + W / 2, 77, { align: 'center' })
-  doc.setFont('times', 'bold')
-  doc.setFontSize(10)
-  doc.text('PAY AS YOU CAN', X + W / 2, 89, { align: 'center' })
-  doc.line(X, 96, X + W, 96)
-  drawFooter()
-  y = 112
-
-  const section = (title: string) => {
-    space(30)
-    y += 10
-    doc.setFillColor(229, 229, 229)
-    doc.rect(X, y - 12, W, 16, 'F')
-    doc.setDrawColor(0)
-    doc.setLineWidth(0.9)
-    doc.line(X, y + 4, X + W, y + 4)
-    doc.setFont('times', 'bold')
-    doc.setFontSize(10.5)
-    doc.text(title, X, y)
-    y += 24
-  }
-  const fieldLine = (label: string, value?: string) => {
-    space(21)
-    doc.setFont('times', 'normal')
-    doc.setFontSize(9.5)
-    doc.text(label, X, y)
-    const ly = y + 5
-    doc.setDrawColor(0)
-    doc.setLineWidth(0.6)
-    doc.line(X, ly, X + W, ly)
-    if (any(value)) {
-      doc.setFont('times', 'bold')
-      doc.setFontSize(9.5)
-      doc.text(any(value), X, ly - 1.5)
-    }
-    y += 21
-  }
-  const pair = (l1: string, v1?: string, l2?: string, v2?: string) => {
-    space(21)
-    const half = W / 2 - 8
-    doc.setFont('times', 'normal')
-    doc.setFontSize(9.5)
-    doc.text(l1, X, y)
-    const l1y = y + 5
-    doc.setDrawColor(0)
-    doc.setLineWidth(0.6)
-    doc.line(X, l1y, X + half, l1y)
-    if (any(v1)) {
-      doc.setFont('times', 'bold')
-      doc.setFontSize(9.5)
-      doc.text(any(v1), X, l1y - 1.5)
-    }
-    if (l2) {
-      const xr = X + half + 16
-      doc.setFont('times', 'normal')
-      doc.setFontSize(9.5)
-      doc.text(l2, xr, y)
-      const l2y = y + 5
-      doc.line(xr, l2y, X + W, l2y)
-      if (any(v2)) {
-        doc.setFont('times', 'bold')
-        doc.setFontSize(9.5)
-        doc.text(any(v2), xr, l2y - 1.5)
-      }
-    }
-    y += 21
-  }
-  const options = (label: string, opts: string[], chosen?: string) => {
-    space(32)
-    doc.setFont('times', 'normal')
-    doc.setFontSize(9.5)
-    doc.text(label, X, y)
-    let cy = y + 13
-    let x = X
-    const cb = 7
-    for (const o of opts) {
-      const total = cb + 3 + doc.getTextWidth(o) + 1
-      if (x + total > X + W) {
-        x = X
-        cy += 13
-      }
-      const on = any(chosen) === o
-      doc.setDrawColor(0)
-      if (on) {
-        doc.setFillColor(0)
-        doc.rect(x, cy - 5, cb, cb, 'F')
-      } else {
-        doc.rect(x, cy - 5, cb, cb, 'S')
-      }
-      doc.setFont('times', on ? 'bold' : 'normal')
-      doc.setTextColor(on ? 0 : 50)
-      doc.text(o, x + cb + 3, cy)
-      doc.setTextColor(0)
-      x += total + 10
-    }
-    y = cy + 12
-  }
-  const multiOptions = (label: string, opts: string[], value?: string) => {
-    const chosen = any(value)
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean)
-    space(32)
-    doc.setFont('times', 'normal')
-    doc.setFontSize(9.5)
-    doc.text(label, X, y)
-    let cy = y + 13
-    let x = X
-    const cb = 7
-    for (const o of opts) {
-      const total = cb + 3 + doc.getTextWidth(o) + 1
-      if (x + total > X + W) {
-        x = X
-        cy += 13
-      }
-      const on = chosen.includes(o)
-      doc.setDrawColor(0)
-      if (on) {
-        doc.setFillColor(0)
-        doc.rect(x, cy - 5, cb, cb, 'F')
-      } else {
-        doc.rect(x, cy - 5, cb, cb, 'S')
-      }
-      doc.setFont('times', on ? 'bold' : 'normal')
-      doc.setTextColor(on ? 0 : 50)
-      doc.text(o, x + cb + 3, cy)
-      doc.setTextColor(0)
-      x += total + 10
-    }
-    y = cy + 12
-  }
-  const textArea = (label: string, value?: string) => {
-    const lines = doc.splitTextToSize(any(value) || '\u00A0', W - 12)
-    const h = Math.max(1, lines.length) * 12 + 8
-    space(16 + h)
-    doc.setFont('times', 'normal')
-    doc.setFontSize(9.5)
-    doc.text(label, X, y)
-    const by = y + 6
-    doc.setDrawColor(0)
-    doc.setLineWidth(0.5)
-    doc.rect(X, by, W, h)
-    if (any(value)) {
-      doc.setFont('times', 'bold')
-      doc.setFontSize(9)
-      doc.text(lines, X + 6, by + 14, { lineHeightFactor: 1.15 })
-    }
-    y = by + h + 8
-  }
-  const boxed = (statement: string, checked: boolean) => {
-    space(18)
-    doc.setDrawColor(0)
-    if (checked) {
-      doc.setFillColor(0)
-      doc.rect(X, y - 10, 8, 8, 'F')
-    } else {
-      doc.rect(X, y - 10, 8, 8, 'S')
-    }
-    doc.setFont('times', 'normal')
-    doc.setFontSize(9.5)
-    doc.text(statement, X + 14, y)
-    y += 16
-  }
-
-  // SECTION 1 — CHILD'S INFORMATION
-  section("SECTION 1 \u2014 CHILD'S INFORMATION")
-  fieldLine("Child's Full Name *", answers.childName)
-  pair("Child's Age", answers.childAge, 'Gender', answers.gender)
-  fieldLine('School', answers.school)
-  multiOptions('What does the child enjoy most?', ['Technology', 'Art & Creativity', 'Building & Making Things', 'Problem Solving', 'Robotics', 'Speaking & Leadership', 'Coming up with Ideas', 'Games', 'Working with Others', 'Other'], answers.interests)
-  fieldLine('Other interest', answers.otherInterest)
-
-  // SECTION 2 — PARENT/GUARDIAN INFORMATION
-  section('SECTION 2 \u2014 PARENT/GUARDIAN INFORMATION')
-  fieldLine('Parent or Guardian Full Name *', answers.parentName)
-  fieldLine('Parent or Guardian Phone Number *', answers.parentPhone)
-  fieldLine('WhatsApp Number *', answers.whatsapp)
-  options('Relationship to Child *', ['Mother', 'Father', 'Guardian', 'Other'], answers.relationship)
-  fieldLine('If Other, please specify', answers.otherRelationship)
-  fieldLine('Email Address (optional)', answers.email)
-
-  // SECTION 3 — EMERGENCY & SAFETY
-  section('SECTION 3 \u2014 EMERGENCY & SAFETY')
-  options('Allergy, medical condition, or special consideration? *', ['No', 'Yes'], answers.medical)
-  textArea('If Yes, please explain', answers.medicalExplain)
-
-  // SECTION 4 — CONSENT
-  section('SECTION 4 \u2014 CONSENT')
-  boxed('I confirm that I am the parent or guardian of the child named above and give permission for the child to participate in the Builda Meetup, Meet the Builders, on 31 October 2026.', answers.consent === 'Yes')
-  options('Photography & Video Consent *', ['Yes, I give permission', 'No, I do not give permission'], answers.photoConsent)
-
-  // SECTION 5 — HOW DID YOU HEAR ABOUT US?
-  section('SECTION 5 \u2014 HOW DID YOU HEAR ABOUT US?')
-  options('How did you hear about the Builda Meetup? *', ['Facebook', 'Instagram', 'TikTok', 'WhatsApp', 'School', 'Friend/Family', 'Builda', 'Elimora Girls Foundation', 'Freetown Innovation Lab', 'Other'], answers.heardFrom)
-  fieldLine('If Other, please specify', answers.otherHeardFrom)
-
-  return doc
 }
