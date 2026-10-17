@@ -39,6 +39,20 @@ export async function buildRegistrationPdfBase64(answers: FbAnswers): Promise<st
   return arrayBufferToBase64(doc.output('arraybuffer') as ArrayBuffer)
 }
 
+export async function downloadRegistrationPdf(answers: FbAnswers): Promise<void> {
+  const jsPDF = await loadJspdf()
+  const doc = buildRegistrationPdf(jsPDF, answers)
+  const childName = any(answers.childName).replace(/[^\w- ]+/g, '').trim().replace(/\s+/g, '_')
+  const url = URL.createObjectURL(doc.output('blob'))
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `${childName || 'Child'}_MeetTheBuilders_Registration.pdf`
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
 export function buildRegistrationPdf(jsPDF: any, answers: FbAnswers) {
   const doc = new jsPDF({ unit: 'pt', format: 'a4' })
   let y = TOP

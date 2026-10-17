@@ -6,7 +6,7 @@ import { SiteHeader } from '@/components/site-header'
 import { FieldError, RequiredMark } from '@/components/form-kit'
 import { useRegistration } from '@/lib/use-registration'
 import { clearState, HEARD_FROM_OPTIONS, validateHeardFrom, type Errors } from '@/lib/registration'
-import { buildRegistrationPdfBase64 } from '@/components/future-builders-pdf'
+import { buildRegistrationPdfBase64, downloadRegistrationPdf } from '@/components/future-builders-pdf'
 
 type SubmitStatus = 'idle' | 'submitting' | 'success' | 'error'
 
@@ -102,6 +102,33 @@ export default function StepHeardFrom() {
     }
   }
 
+  async function downloadPdf() {
+    try {
+      await downloadRegistrationPdf({
+        childName: state.childName,
+        childAge: state.childAge,
+        gender: state.gender,
+        school: state.school,
+        interests: state.interests.join(', '),
+        otherInterest: state.otherInterest.trim(),
+        parentName: state.parentName,
+        parentPhone: state.parentPhone,
+        whatsapp: state.whatsapp,
+        relationship: state.relationship,
+        otherRelationship: state.otherRelationship.trim().replace(/\s+/g, ' '),
+        email: state.email.trim(),
+        medical: state.medical,
+        medicalExplain: state.medicalExplain.trim(),
+        consent: 'Yes',
+        photoConsent: state.photoConsent,
+        heardFrom: state.heardFrom,
+        otherHeardFrom: state.otherHeardFrom.trim(),
+      })
+    } catch {
+      setStatus('error')
+    }
+  }
+
   function resetForm() {
     clearState()
     setErrors({})
@@ -133,6 +160,9 @@ export default function StepHeardFrom() {
               <br />
               Please arrive a little early for registration.
             </p>
+            <button className="mf-submit mf-submit-inline" type="button" onClick={downloadPdf}>
+              Download Registration PDF
+            </button>
             <button className="mf-submit mf-submit-inline" type="button" onClick={resetForm}>
               Register Another Child
             </button>
