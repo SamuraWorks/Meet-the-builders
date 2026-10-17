@@ -25,6 +25,7 @@ export const metadata: Metadata = {
     images: [{ url: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/IMG-20261017-WA0076-MI7UXSJ4va3xyMyK8ikw3uTuecj2s0.jpg', width: 720, height: 1080, alt: 'Builda Robotics Day 2026 flyer' }],
   },
   twitter: { card: 'summary_large_image', title: 'Builda — Robotics Day 2026', images: ['https://hebbkx1anhila5yf.public.blob.vercel-storage.com/IMG-20261017-WA0076-MI7UXSJ4va3xyMyK8ikw3uTuecj2s0.jpg'] },
+  icons: { icon: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/IMG-20261017-WA0074-pqs47ZHaSfz3VK8IKMPX9NSbQ6yqJY.jpg', apple: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/IMG-20261017-WA0074-pqs47ZHaSfz3VK8IKMPX9NSbQ6yqJY.jpg' },
 }
 
 export const viewport: Viewport = {
