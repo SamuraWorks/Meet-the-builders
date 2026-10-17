@@ -147,8 +147,8 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, error: validationError }, { status: 400 })
   }
 
-  const user = process.env.SMTP_USER
-  const pass = process.env.SMTP_PASS
+  const user = process.env.SMTP_USER || 'academyfuturebuilders@gmail.com'
+  const pass = process.env.SMTP_PASS?.replace(/\s+/g, '')
 
   if (!user || !pass) {
     console.error(
