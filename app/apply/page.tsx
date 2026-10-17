@@ -4,7 +4,7 @@ import { StepShell } from '@/components/step-shell'
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Apply — Future Builders Academy',
+  title: 'Apply — Builda Robotics Day 2026',
 }
 
 export default function GetStartedPage() {
@@ -25,8 +25,7 @@ export default function GetStartedPage() {
             <div>
               <h2>Get Started</h2>
               <p className="mf-card-sub">
-                A few quick details to register your young builder. You&apos;ll go through 5 short sections —
-                it takes about 2 minutes.
+                A few quick details to apply for Robotics Day. You&apos;ll go through 5 short sections — it takes about 2 minutes.
               </p>
             </div>
           </div>
@@ -45,7 +44,7 @@ export default function GetStartedPage() {
                 &#10003;
               </span>
               <span>
-                <strong>Parent or guardian details</strong> — so we can contact you about the meetup
+                <strong>Parent or guardian details</strong> — so we can contact you about Robotics Day
               </span>
             </li>
             <li>

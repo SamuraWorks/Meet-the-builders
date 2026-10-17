@@ -51,7 +51,7 @@ export function buildRegistrationPdf(jsPDF: any, answers: FbAnswers) {
     doc.setTextColor(0)
     doc.setFont('times', 'normal')
     doc.setFontSize(8.5)
-    doc.text('Future Builders Academy \u2022 academyfuturebuilders@gmail.com', X + W / 2, 806, { align: 'center' })
+    doc.text('Builda \u2022 academyfuturebuilders@gmail.com', X + W / 2, 806, { align: 'center' })
     doc.text(`Page ${page}`, X + W / 2, 818, { align: 'center' })
     doc.setTextColor(0)
     doc.setFontSize(10)
@@ -61,7 +61,7 @@ export function buildRegistrationPdf(jsPDF: any, answers: FbAnswers) {
     doc.setDrawColor(0)
     doc.setFont('times', 'bold')
     doc.setFontSize(10.5)
-    doc.text('Future Builders Academy', X, 32)
+    doc.text('Builda', X, 32)
     doc.text('MEET THE BUILDERS \u2014 REGISTRATION FORM', X + W, 32, { align: 'right' })
     doc.setLineWidth(0.7)
     doc.line(X, 40, X + W, 40)
@@ -80,15 +80,15 @@ export function buildRegistrationPdf(jsPDF: any, answers: FbAnswers) {
   doc.setLineWidth(0.8)
   doc.setFont('times', 'bold')
   doc.setFontSize(15)
-  doc.text('Future Builders Academy', X + W / 2, 46, { align: 'center' })
+  doc.text('Builda', X + W / 2, 46, { align: 'center' })
   doc.setFontSize(13)
   doc.text('MEET THE BUILDERS \u2014 REGISTRATION FORM', X + W / 2, 62, { align: 'center' })
   doc.setFont('times', 'italic')
   doc.setFontSize(10)
-  doc.text('Saturday, 26 September 2026 \u2022 10:00 AM \u2022 Freetown Innovation Lab, Opposite FBC Field', X + W / 2, 77, { align: 'center' })
+  doc.text('Saturday, 31 October 2026 \u2022 10:00 AM \u2022 Freetown Innovation Lab, Opposite FBC Field', X + W / 2, 77, { align: 'center' })
   doc.setFont('times', 'bold')
   doc.setFontSize(10)
-  doc.text('FREE EVENT', X + W / 2, 89, { align: 'center' })
+  doc.text('PAY AS YOU CAN', X + W / 2, 89, { align: 'center' })
   doc.line(X, 96, X + W, 96)
   drawFooter()
   y = 112
@@ -273,12 +273,12 @@ export function buildRegistrationPdf(jsPDF: any, answers: FbAnswers) {
 
   // SECTION 4 — CONSENT
   section('SECTION 4 \u2014 CONSENT')
-  boxed('I confirm that I am the parent or guardian of the child named above and give permission for the child to participate in the Future Builders Academy Meetup, Meet the Builders, on 26 September 2026.', answers.consent === 'Yes')
+  boxed('I confirm that I am the parent or guardian of the child named above and give permission for the child to participate in the Builda Meetup, Meet the Builders, on 31 October 2026.', answers.consent === 'Yes')
   options('Photography & Video Consent *', ['Yes, I give permission', 'No, I do not give permission'], answers.photoConsent)
 
   // SECTION 5 — HOW DID YOU HEAR ABOUT US?
   section('SECTION 5 \u2014 HOW DID YOU HEAR ABOUT US?')
-  options('How did you hear about the Future Builders Academy Meetup? *', ['Facebook', 'Instagram', 'TikTok', 'WhatsApp', 'School', 'Friend/Family', 'Future Builders Academy', 'Elimora Girls Foundation', 'Freetown Innovation Lab', 'Other'], answers.heardFrom)
+  options('How did you hear about the Builda Meetup? *', ['Facebook', 'Instagram', 'TikTok', 'WhatsApp', 'School', 'Friend/Family', 'Builda', 'Elimora Girls Foundation', 'Freetown Innovation Lab', 'Other'], answers.heardFrom)
   fieldLine('If Other, please specify', answers.otherHeardFrom)
 
   return doc

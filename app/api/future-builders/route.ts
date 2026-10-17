@@ -12,7 +12,7 @@ const HEARD_FROM = [
   'WhatsApp',
   'School',
   'Friend/Family',
-  'Future Builders Academy',
+  'Builda',
   'Elimora Girls Foundation',
   'Freetown Innovation Lab',
   'Other',
@@ -37,7 +37,7 @@ function validate(data: Record<string, unknown>): string | null {
 
   if (!f('childName')) return "Child's full name is required."
   const age = Number(f('childAge'))
-  if (!f('childAge') || !Number.isInteger(age) || age < 1 || age > 17) return "Child's age is required (7–17)."
+  if (!f('childAge') || !Number.isInteger(age) || age < 4 || age > 17) return "Child's age is required (4–17)."
   if (!f('gender')) return 'Gender is required.'
   if (!f('school')) return 'School is required.'
   if (!f('parentName')) return 'Parent or guardian full name is required.'
@@ -58,7 +58,8 @@ function validate(data: Record<string, unknown>): string | null {
   if (f('heardFrom') === 'Other' && !f('otherHeardFrom')) return 'Please specify how you heard about us.'
 
   const email = f('email')
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Enter a valid email address.'
+  if (!email) return 'Email address is required so we can send your confirmation.'
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Enter a valid email address.'
 
   if (!str(data.pdfBase64)) return 'Application PDF is missing.'
 
@@ -109,8 +110,8 @@ function buildHtml(rows: Array<[string, string]>): string {
     .map(([label, value]) => `<tr><td style="padding:8px 12px;border-bottom:1px solid #e4e7eb;font-size:14px;"><strong>${label}</strong></td><td style="padding:8px 12px;border-bottom:1px solid #e4e7eb;font-size:14px;">${value || '—'}</td></tr>`)
     .join('')
   return `<div style="font-family:Arial,Helvetica,sans-serif;color:#212121;">
-    <h1 style="font-size:20px;margin:0 0 4px;">Future Builders Academy — Meet the Builders</h1>
-    <p style="margin:0 0 16px;color:#555;">Saturday, 26 September 2026 · 10:00 AM · Freetown Innovation Lab, Opposite FBC Field</p>
+    <h1 style="font-size:20px;margin:0 0 4px;">Builda — Meet the Builders: Robotics Day 2026</h1>
+    <p style="margin:0 0 16px;color:#555;">Saturday, 31 October 2026 · 10:00 AM · Freetown Innovation Lab, opposite FBC Field</p>
     <table style="border-collapse:collapse;width:100%;max-width:640px;">${list}</table>
   </div>`
 }
@@ -118,14 +119,14 @@ function buildHtml(rows: Array<[string, string]>): string {
 function buildConfirmationHtml(answers: Record<string, string> | undefined): string {
   return `<div style="font-family:Arial,Helvetica,sans-serif;color:#212121;">
     <h1 style="font-size:20px;margin:0 0 6px;">REGISTRATION RECEIVED!</h1>
-    <p style="margin:0 0 14px;line-height:1.6;">Hi ${str(answers?.parentName) || 'there'},<br/><br/>Thank you for registering for the Future Builders Academy Meetup — <strong>Meet the Builders</strong>! We look forward to welcoming your young builder.</p>
+    <p style="margin:0 0 14px;line-height:1.6;">Hi ${str(answers?.parentName) || 'there'},<br/><br/>Thank you for applying for <strong>Builda Meet the Builders — Robotics Day</strong>. Your application has been received.</p>
     <table style="border-collapse:collapse;background:#f6f8fa;font-size:14px;">
-      <tr><td style="padding:10px 16px;"><strong>Date:</strong> Saturday, 26 September 2026</td></tr>
+      <tr><td style="padding:10px 16px;"><strong>Date:</strong> Saturday, 31 October 2026</td></tr>
       <tr><td style="padding:10px 16px;"><strong>Time:</strong> 10:00 AM</td></tr>
-      <tr><td style="padding:10px 16px;"><strong>Venue:</strong> Freetown Innovation Lab, Opposite FBC Field</td></tr>
-      <tr><td style="padding:10px 16px;"><strong>Event:</strong> FREE EVENT</td></tr>
+      <tr><td style="padding:10px 16px;"><strong>Venue:</strong> Freetown Innovation Lab, opposite FBC Field</td></tr>
+      <tr><td style="padding:10px 16px;"><strong>Event:</strong> PAY AS YOU CAN</td></tr>
     </table>
-    <p style="margin:16px 0 0;line-height:1.6;">Please arrive a little early for registration.<br/><br/>— Future Builders Academy</p>
+    <p style="margin:16px 0 0;line-height:1.6;">Please arrive a little early for registration.<br/><br/>— Builda</p>
   </div>`
 }
 
@@ -171,7 +172,8 @@ export async function POST(request: Request) {
     const rows = buildRows(data)
 
     await transporter.sendMail({
-      from: `"Future Builders Academy" <${user}>`,
+      from: `"Builda Robotics Day" <${user}>`,
+      replyTo: answers.email,
       to: RECIPIENT,
       subject: `Meet the Builders Registration — ${childName}`,
       text: buildPlain(rows),
@@ -184,16 +186,15 @@ export async function POST(request: Request) {
       ],
     })
 
-    const email = str(answers.email)
-    if (email) {
-      await transporter.sendMail({
-        from: `"Future Builders Academy" <${user}>`,
+const email = str(answers.email)
+    await transporter.sendMail({
+        from: `"Builda Robotics Day" <${user}>`,
+        replyTo: RECIPIENT,
         to: email,
-        subject: 'REGISTRATION RECEIVED! — Future Builders Academy Meetup',
-        text: `REGISTRATION RECEIVED!\n\nHi ${str(answers.parentName) || 'there'},\n\nThank you for registering for the Future Builders Academy Meetup — Meet the Builders! We look forward to welcoming your young builder.\n\nSaturday, 26 September 2026\n10:00 AM\nFreetown Innovation Lab, Opposite FBC Field\n\nFREE EVENT\n\nPlease arrive a little early for registration.\n\n— Future Builders Academy`,
+        subject: 'APPLICATION RECEIVED! — Builda Robotics Day 2026',
+        text: `REGISTRATION RECEIVED!\n\nHi ${str(answers.parentName) || 'there'},\n\nThank you for applying for Builda Meet the Builders — Robotics Day. Your application has been received.\n\nSaturday, 31 October 2026\n10:00 AM\nFreetown Innovation Lab, opposite FBC Field\n\nPAY AS YOU CAN\n\nPlease arrive a little early for registration.\n\n— Builda`,
         html: buildConfirmationHtml(answers),
       })
-    }
 
     return Response.json({ ok: true })
   } catch (error) {

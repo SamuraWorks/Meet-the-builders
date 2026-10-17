@@ -2,6 +2,7 @@
 
 import { FormEvent, useRef, useState } from 'react'
 import { StepShell } from '@/components/step-shell'
+import { SiteHeader } from '@/components/site-header'
 import { FieldError, RequiredMark } from '@/components/form-kit'
 import { useRegistration } from '@/lib/use-registration'
 import { clearState, HEARD_FROM_OPTIONS, validateHeardFrom, type Errors } from '@/lib/registration'
@@ -111,25 +112,23 @@ export default function StepHeardFrom() {
   if (status === 'success') {
     return (
       <main className="inner-page">
+        <SiteHeader />
         <div className="step-top" />
         <section className="mf-success">
           <div className="mf-success-card">
-            <span className="mf-success-icon" aria-hidden="true">
-              🛠️
-            </span>
-            <h2>REGISTRATION RECEIVED!</h2>
+            <span className="mf-success-icon" aria-hidden="true">✓</span>
+            <h2>APPLICATION RECEIVED</h2>
             <p>
-              Thank you for registering for the Future Builders Academy Meetup, <strong>Meet the
-              Builders</strong>! We look forward to welcoming your young builder.
+              Thank you for applying for <strong>Builda Meet the Builders — Robotics Day</strong>. Your application has been received.
               <br />
               <br />
-              Saturday, 26 September 2026
+              Saturday, 31 October 2026
               <br />
               10:00 AM
               <br />
-              Freetown Innovation Lab, Opposite FBC Field
+              Freetown Innovation Lab, opposite FBC Field
               <br />
-              FREE EVENT
+              Pay As You Can
               <br />
               <br />
               Please arrive a little early for registration.
@@ -148,7 +147,7 @@ export default function StepHeardFrom() {
       step={5}
       title="Almost Done!"
       backHref="/apply/step-4"
-      submitLabel="Submit Registration"
+      submitLabel="Submit Application"
       submitting={status === 'submitting'}
       onSubmit={handleSubmit}
     >
@@ -197,7 +196,7 @@ export default function StepHeardFrom() {
       )}
 
       <div className="mf-note">
-        One last check — press <strong>Submit Registration</strong> and your application is in!
+        One last check — press <strong>Submit Application</strong> and your application is in!
       </div>
     </StepShell>
   )

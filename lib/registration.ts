@@ -62,7 +62,7 @@ export const HEARD_FROM_OPTIONS = [
   'WhatsApp',
   'School',
   'Friend/Family',
-  'Future Builders Academy',
+  'Builda',
   'Elimora Girls Foundation',
   'Freetown Innovation Lab',
   'Other',
@@ -109,7 +109,7 @@ export function validateChild(state: RegistrationState): Errors {
   if (!ageText) errors.childAge = "Child's age is required."
   else {
     const age = Number(ageText)
-    if (!Number.isInteger(age) || age < 1 || age > 17) errors.childAge = 'Age must be a number from 1 to 17.'
+    if (!Number.isInteger(age) || age < 4 || age > 17) errors.childAge = 'Age must be a number from 4 to 17.'
   }
   if (!state.gender) errors.gender = 'Please choose a gender.'
   if (!state.school.trim()) errors.school = 'School is required.'
@@ -125,7 +125,8 @@ export function validateParent(state: RegistrationState): Errors {
   if (state.relationship === 'Other' && !state.otherRelationship.trim())
     errors.otherRelationship = 'Please specify the relationship.'
   const email = state.email.trim()
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'Enter a valid email address.'
+  if (!email) errors.email = 'Email address is required so we can send your confirmation.'
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'Enter a valid email address.'
   return errors
 }
 

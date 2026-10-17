@@ -48,8 +48,8 @@ export default function StepConsent() {
         />
         <span>
           I confirm that I am the parent or guardian of the child named above and give permission for the
-          child to participate in the <strong>Future Builders Academy Meetup, Meet the Builders</strong> on
-          26 September 2026.
+          child to participate in the <strong>Builda Meet the Builders — Robotics Day</strong> on
+          31 October 2026.
         </span>
       </label>
       <FieldError id="consent-error" message={errors.consent} />
@@ -59,7 +59,7 @@ export default function StepConsent() {
           Photography &amp; Video Consent <RequiredMark />
         </p>
         <p className="mf-hint" id="photoConsent-hint">
-          During the event, photographs and videos may be taken for Future Builders Academy&apos;s
+          During the event, photographs and videos may be taken for Builda&apos;s
           documentation and social media communication.
         </p>
         <div className="mf-options" role="radiogroup" aria-required="true" aria-describedby={errors.photoConsent ? 'photoConsent-error' : undefined}>
@@ -83,7 +83,7 @@ export default function StepConsent() {
       </div>
 
       <div className="mf-note">
-        By continuing, your information is sent to the Future Builders Academy team by email and used only
+        By continuing, your information is sent directly to the Builda team by email and used only
         to process this registration and keep your child safe at the event.
       </div>
     </StepShell>

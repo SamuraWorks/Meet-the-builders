@@ -147,10 +147,10 @@ export default function StepParent() {
 
       <div className="mf-field">
         <label className="mf-label" htmlFor="email">
-          Email Address <span className="mf-optional">Optional</span>
+          Email Address <RequiredMark />
         </label>
         <p className="mf-hint" id="email-hint">
-          Leave blank if you don&apos;t have one. If provided, a confirmation email will be sent here.
+          We&apos;ll send a confirmation of this application to this address.
         </p>
         <input
           className="mf-input"

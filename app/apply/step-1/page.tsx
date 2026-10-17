@@ -70,7 +70,7 @@ export default function StepChild() {
             className="mf-input"
             id="childAge"
             type="number"
-            min={7}
+            min={4}
             max={17}
             step={1}
             inputMode="numeric"
@@ -90,7 +90,7 @@ export default function StepChild() {
             Gender <RequiredMark />
           </p>
           <div className="mf-options mf-options-row" role="radiogroup" aria-required="true" aria-describedby={errors.gender ? 'gender-error' : undefined}>
-            {['Male', 'Female'].map((option) => (
+            {['Male', 'Female', 'Prefer not to say'].map((option) => (
               <label key={option} className={`mf-option ${state.gender === option ? 'selected' : ''}`}>
                 <input
                   type="radio"
