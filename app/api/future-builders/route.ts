@@ -194,6 +194,12 @@ const email = str(answers.email)
         subject: 'APPLICATION RECEIVED! — Builda Robotics Day 2026',
         text: `REGISTRATION RECEIVED!\n\nHi ${str(answers.parentName) || 'there'},\n\nThank you for applying for Builda Meet the Builders — Robotics Day. Your application has been received.\n\nSaturday, 31 October 2026\n10:00 AM\nFreetown Innovation Lab, opposite FBC Field\n\nPAY AS YOU CAN\n\nPlease arrive a little early for registration.\n\n— Builda`,
         html: buildConfirmationHtml(answers),
+        attachments: [
+          {
+            filename: `${safeName || 'Child'}_MeetTheBuilders_Registration.pdf`,
+            content: Buffer.from(str(data.pdfBase64), 'base64'),
+          },
+        ],
       })
 
     return Response.json({ ok: true })
