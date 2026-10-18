@@ -1,5 +1,3 @@
-import nodemailer from 'nodemailer'
-
 export const runtime = 'nodejs'
 
 const RECIPIENT = process.env.FUTURE_BUILDERS_EMAIL || 'academyfuturebuilders@gmail.com'
@@ -133,48 +131,50 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, error: validationError }, { status: 400 })
   }
 
-  const user = process.env.SMTP_USER || 'academyfuturebuilders@gmail.com'
-  const pass = process.env.SMTP_PASS?.replace(/\s+/g, '')
-
-  if (!user || !pass) {
-    console.error(
-      '[future-builders] Missing SMTP credentials. Set SMTP_USER and SMTP_PASS in your environment.',
-    )
+  const apiKey = process.env.API_KEY
+  if (!apiKey) {
+    console.error('[future-builders] Missing Resend API key (API_KEY).')
     return Response.json({ ok: false, error: 'Email is not configured.' }, { status: 500 })
   }
 
   const answers = (data.answers ?? {}) as Record<string, string>
   const childName = str(answers.childName)
   const safeName = childName.replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_')
+  const rows = buildRows(data)
 
   try {
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
-      auth: { user, pass },
+    const resendResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'Idempotency-Key': `future-builders/${crypto.randomUUID()}`,
+      },
+      body: JSON.stringify({
+        from: 'Builda Robotics Day <onboarding@resend.dev>',
+        to: [RECIPIENT],
+        reply_to: answers.email,
+        subject: `Meet the Builders Registration — ${childName}`,
+        text: buildPlain(rows),
+        html: buildHtml(rows),
+        attachments: [
+          {
+            filename: `${safeName || 'Child'}_MeetTheBuilders_Registration.pdf`,
+            content: str(data.pdfBase64),
+          },
+        ],
+      }),
     })
 
-    const rows = buildRows(data)
+    const result = (await resendResponse.json().catch(() => null)) as { id?: string; message?: string } | null
+    if (!resendResponse.ok || !result?.id) {
+      console.error('[future-builders] Resend rejected registration:', resendResponse.status, result?.message)
+      return Response.json({ ok: false, error: 'The email service could not accept the application.' }, { status: 502 })
+    }
 
-    await transporter.sendMail({
-      from: `"Builda Robotics Day" <${user}>`,
-      replyTo: answers.email,
-      to: RECIPIENT,
-      subject: `Meet the Builders Registration — ${childName}`,
-      text: buildPlain(rows),
-      html: buildHtml(rows),
-      attachments: [
-        {
-          filename: `${safeName || 'Child'}_MeetTheBuilders_Registration.pdf`,
-          content: Buffer.from(str(data.pdfBase64), 'base64'),
-        },
-      ],
-    })
-
-    return Response.json({ ok: true })
+    return Response.json({ ok: true, id: result.id })
   } catch (error) {
     console.error('[future-builders] Failed to send registration email:', error)
-    return Response.json({ ok: false, error: 'Failed to send email.' }, { status: 500 })
+    return Response.json({ ok: false, error: 'Failed to send email.' }, { status: 502 })
   }
 }
