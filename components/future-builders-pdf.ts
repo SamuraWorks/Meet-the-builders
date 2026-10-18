@@ -121,66 +121,65 @@ export function buildRegistrationPdf(jsPDF: any, answers: FbAnswers) {
     y += 24
   }
   const fieldLine = (label: string, value?: string) => {
-    space(21)
+    const cleanValue = any(value)
+    const valueLines = cleanValue ? doc.splitTextToSize(cleanValue, W - 12) : ['']
+    const height = 30 + Math.max(0, valueLines.length - 1) * 11
+    space(height)
     doc.setFont('times', 'normal')
     doc.setFontSize(9.5)
     doc.text(label, X, y)
-    const ly = y + 5
     doc.setDrawColor(0)
     doc.setLineWidth(0.6)
-    doc.line(X, ly, X + W, ly)
-    if (any(value)) {
+    doc.line(X, y + 5, X + W, y + 5)
+    if (cleanValue) {
       doc.setFont('times', 'bold')
       doc.setFontSize(9.5)
-      doc.text(any(value), X, ly - 1.5)
+      doc.text(valueLines, X + 2, y + 17, { lineHeightFactor: 1.15 })
     }
-    y += 21
+    y += height
   }
   const pair = (l1: string, v1?: string, l2?: string, v2?: string) => {
-    space(21)
     const half = W / 2 - 8
+    const xr = X + half + 16
+    const leftLines = any(v1) ? doc.splitTextToSize(any(v1), half - 4) : ['']
+    const rightLines = any(v2) ? doc.splitTextToSize(any(v2), W - (xr - X)) : ['']
+    const height = 30 + Math.max(leftLines.length, rightLines.length, 1) * 11 - 11
+    space(height)
     doc.setFont('times', 'normal')
     doc.setFontSize(9.5)
     doc.text(l1, X, y)
-    const l1y = y + 5
+    doc.text(l2 || '', xr, y)
     doc.setDrawColor(0)
     doc.setLineWidth(0.6)
-    doc.line(X, l1y, X + half, l1y)
+    doc.line(X, y + 5, X + half, y + 5)
+    doc.line(xr, y + 5, X + W, y + 5)
     if (any(v1)) {
       doc.setFont('times', 'bold')
-      doc.setFontSize(9.5)
-      doc.text(any(v1), X, l1y - 1.5)
+      doc.text(leftLines, X + 2, y + 17, { lineHeightFactor: 1.15 })
     }
-    if (l2) {
-      const xr = X + half + 16
-      doc.setFont('times', 'normal')
-      doc.setFontSize(9.5)
-      doc.text(l2, xr, y)
-      const l2y = y + 5
-      doc.line(xr, l2y, X + W, l2y)
-      if (any(v2)) {
-        doc.setFont('times', 'bold')
-        doc.setFontSize(9.5)
-        doc.text(any(v2), xr, l2y - 1.5)
-      }
+    if (any(v2)) {
+      doc.setFont('times', 'bold')
+      doc.text(rightLines, xr + 2, y + 17, { lineHeightFactor: 1.15 })
     }
-    y += 21
+    y += height
   }
   const options = (label: string, opts: string[], chosen?: string) => {
-    space(32)
     doc.setFont('times', 'normal')
     doc.setFontSize(9.5)
+    const rows = opts.map((o) => ({ option: o, width: cbWidth(o) }))
+    const rowCount = Math.max(1, Math.ceil(rows.reduce((count, row) => count + row.width, 0) / W))
+    space(30 + rowCount * 15)
     doc.text(label, X, y)
-    let cy = y + 13
+    let cy = y + 14
     let x = X
     const cb = 7
-    for (const o of opts) {
-      const total = cb + 3 + doc.getTextWidth(o) + 1
-      if (x + total > X + W) {
+    for (const { option } of rows) {
+      const total = cb + 3 + doc.getTextWidth(option) + 11
+      if (x !== X && x + total > X + W) {
         x = X
-        cy += 13
+        cy += 15
       }
-      const on = any(chosen) === o
+      const on = any(chosen) === option
       doc.setDrawColor(0)
       if (on) {
         doc.setFillColor(0)
@@ -190,12 +189,13 @@ export function buildRegistrationPdf(jsPDF: any, answers: FbAnswers) {
       }
       doc.setFont('times', on ? 'bold' : 'normal')
       doc.setTextColor(on ? 0 : 50)
-      doc.text(o, x + cb + 3, cy)
+      doc.text(option, x + cb + 3, cy)
       doc.setTextColor(0)
-      x += total + 10
+      x += total
     }
-    y = cy + 12
+    y = cy + 14
   }
+  const cbWidth = (option: string) => 7 + 3 + doc.getTextWidth(option) + 11
   const multiOptions = (label: string, opts: string[], value?: string) => {
     const chosen = any(value)
       .split(',')
