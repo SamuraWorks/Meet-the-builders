@@ -163,9 +163,16 @@ export async function POST(request: Request) {
 
   try {
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
       auth: { user, pass },
+      connectionTimeout: 15_000,
+      greetingTimeout: 15_000,
+      socketTimeout: 30_000,
     })
+
+    await transporter.verify()
 
     const rows = buildRows(data)
 
