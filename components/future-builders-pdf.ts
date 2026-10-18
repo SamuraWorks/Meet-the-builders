@@ -17,6 +17,22 @@ function loadJspdf(): Promise<any> {
   })
 }
 
+async function loadLogoDataUrl(): Promise<string | null> {
+  try {
+    const response = await fetch('/future-builders/logo.jpeg')
+    if (!response.ok) return null
+    const blob = await response.blob()
+    return await new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : null)
+      reader.onerror = () => resolve(null)
+      reader.readAsDataURL(blob)
+    })
+  } catch {
+    return null
+  }
+}
+
 function any(val: string | undefined): string {
   if (!val) return ''
   const v = String(val).trim()
@@ -35,13 +51,15 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 
 export async function buildRegistrationPdfBase64(answers: FbAnswers): Promise<string> {
   const jsPDF = await loadJspdf()
-  const doc = buildRegistrationPdf(jsPDF, answers)
+  const logoDataUrl = await loadLogoDataUrl()
+  const doc = buildRegistrationPdf(jsPDF, answers, logoDataUrl)
   return arrayBufferToBase64(doc.output('arraybuffer') as ArrayBuffer)
 }
 
 export async function downloadRegistrationPdf(answers: FbAnswers): Promise<void> {
   const jsPDF = await loadJspdf()
-  const doc = buildRegistrationPdf(jsPDF, answers)
+  const logoDataUrl = await loadLogoDataUrl()
+  const doc = buildRegistrationPdf(jsPDF, answers, logoDataUrl)
   const childName = any(answers.childName).replace(/[^\w- ]+/g, '').trim().replace(/\s+/g, '_')
   const url = URL.createObjectURL(doc.output('blob'))
   const link = document.createElement('a')
@@ -53,16 +71,20 @@ export async function downloadRegistrationPdf(answers: FbAnswers): Promise<void>
   URL.revokeObjectURL(url)
 }
 
-export function buildRegistrationPdf(jsPDF: any, answers: FbAnswers) {
+export function buildRegistrationPdf(jsPDF: any, answers: FbAnswers, logoDataUrl?: string | null) {
   const doc = new jsPDF({ unit: 'pt', format: 'a4' })
+  const navy: [number, number, number] = [10, 35, 64]
+  const turquoise: [number, number, number] = [0, 164, 180]
+  const coral: [number, number, number] = [239, 108, 94]
+  const paleBlue: [number, number, number] = [232, 247, 249]
   let y = TOP
 
   const drawFooter = () => {
     const page = doc.internal.getNumberOfPages()
-    doc.setDrawColor(0)
-    doc.setLineWidth(0.7)
+    doc.setDrawColor(...turquoise)
+    doc.setLineWidth(1.2)
     doc.line(X, 40, X + W, 40)
-    doc.setTextColor(0)
+    doc.setTextColor(...navy)
     doc.setFont('times', 'normal')
     doc.setFontSize(8.5)
     doc.text('Builda \u2022 academyfuturebuilders@gmail.com', X + W / 2, 806, { align: 'center' })
@@ -90,10 +112,16 @@ export function buildRegistrationPdf(jsPDF: any, answers: FbAnswers) {
   }
 
   // Page 1 header
-  doc.setDrawColor(0)
-  doc.setLineWidth(0.8)
+  doc.setFillColor(...navy)
+  doc.roundedRect(X - 10, 18, W + 20, 84, 8, 8, 'F')
+  if (logoDataUrl) {
+    doc.addImage(logoDataUrl, 'JPEG', X + 8, 24, 54, 54)
+  }
+  doc.setDrawColor(...turquoise)
+  doc.setLineWidth(1.4)
   doc.setFont('times', 'bold')
   doc.setFontSize(15)
+  doc.setTextColor(255, 255, 255)
   doc.text('Builda', X + W / 2, 46, { align: 'center' })
   doc.setFontSize(13)
   doc.text('MEET THE BUILDERS \u2014 REGISTRATION FORM', X + W / 2, 62, { align: 'center' })
@@ -103,18 +131,21 @@ export function buildRegistrationPdf(jsPDF: any, answers: FbAnswers) {
   doc.setFont('times', 'bold')
   doc.setFontSize(10)
   doc.text('PAY AS YOU CAN', X + W / 2, 89, { align: 'center' })
+  doc.setDrawColor(...coral)
   doc.line(X, 96, X + W, 96)
+  doc.setTextColor(...navy)
   drawFooter()
   y = 112
 
   const section = (title: string) => {
     space(30)
     y += 10
-    doc.setFillColor(229, 229, 229)
-    doc.rect(X, y - 12, W, 16, 'F')
-    doc.setDrawColor(0)
-    doc.setLineWidth(0.9)
-    doc.line(X, y + 4, X + W, y + 4)
+    doc.setFillColor(...paleBlue)
+    doc.roundedRect(X, y - 13, W, 18, 3, 3, 'F')
+    doc.setDrawColor(...turquoise)
+    doc.setLineWidth(1.1)
+    doc.line(X, y + 5, X + W, y + 5)
+    doc.setTextColor(...navy)
     doc.setFont('times', 'bold')
     doc.setFontSize(10.5)
     doc.text(title, X, y)
