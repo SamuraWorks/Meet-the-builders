@@ -116,20 +116,6 @@ function buildHtml(rows: Array<[string, string]>): string {
   </div>`
 }
 
-function buildConfirmationHtml(answers: Record<string, string> | undefined): string {
-  return `<div style="font-family:Arial,Helvetica,sans-serif;color:#212121;">
-    <h1 style="font-size:20px;margin:0 0 6px;">REGISTRATION RECEIVED!</h1>
-    <p style="margin:0 0 14px;line-height:1.6;">Hi ${str(answers?.parentName) || 'there'},<br/><br/>Thank you for applying for <strong>Builda Meet the Builders — Robotics Day</strong>. Your application has been received.</p>
-    <table style="border-collapse:collapse;background:#f6f8fa;font-size:14px;">
-      <tr><td style="padding:10px 16px;"><strong>Date:</strong> Saturday, 31 October 2026</td></tr>
-      <tr><td style="padding:10px 16px;"><strong>Time:</strong> 10:00 AM</td></tr>
-      <tr><td style="padding:10px 16px;"><strong>Venue:</strong> Freetown Innovation Lab, opposite FBC Field</td></tr>
-      <tr><td style="padding:10px 16px;"><strong>Event:</strong> PAY AS YOU CAN</td></tr>
-    </table>
-    <p style="margin:16px 0 0;line-height:1.6;">Please arrive a little early for registration.<br/><br/>— Builda</p>
-  </div>`
-}
-
 export async function POST(request: Request) {
   let data: Payload
   try {
@@ -185,22 +171,6 @@ export async function POST(request: Request) {
         },
       ],
     })
-
-const email = str(answers.email)
-    await transporter.sendMail({
-        from: `"Builda Robotics Day" <${user}>`,
-        replyTo: RECIPIENT,
-        to: email,
-        subject: 'APPLICATION RECEIVED! — Builda Robotics Day 2026',
-        text: `REGISTRATION RECEIVED!\n\nHi ${str(answers.parentName) || 'there'},\n\nThank you for applying for Builda Meet the Builders — Robotics Day. Your application has been received.\n\nSaturday, 31 October 2026\n10:00 AM\nFreetown Innovation Lab, opposite FBC Field\n\nPAY AS YOU CAN\n\nPlease arrive a little early for registration.\n\n— Builda`,
-        html: buildConfirmationHtml(answers),
-        attachments: [
-          {
-            filename: `${safeName || 'Child'}_MeetTheBuilders_Registration.pdf`,
-            content: Buffer.from(str(data.pdfBase64), 'base64'),
-          },
-        ],
-      })
 
     return Response.json({ ok: true })
   } catch (error) {

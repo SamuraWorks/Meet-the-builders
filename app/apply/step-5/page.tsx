@@ -144,9 +144,9 @@ export default function StepHeardFrom() {
         <section className="mf-success">
           <div className="mf-success-card">
             <span className="mf-success-icon" aria-hidden="true">✓</span>
-            <h2>APPLICATION RECEIVED</h2>
+            <h2>APPLICATION SUBMITTED SUCCESSFULLY</h2>
             <p>
-              Thank you for applying for <strong>Builda Meet the Builders — Robotics Day</strong>. Your application has been received.
+              Thank you for registering for Builda Robotics Day 2026. Your application has been submitted.
               <br />
               <br />
               Saturday, 31 October 2026
@@ -156,15 +156,12 @@ export default function StepHeardFrom() {
               Freetown Innovation Lab, opposite FBC Field
               <br />
               Pay As You Can
-              <br />
-              <br />
-              Please arrive a little early for registration.
             </p>
             <button className="mf-submit mf-submit-inline" type="button" onClick={downloadPdf}>
-              Download Registration PDF
+              DOWNLOAD REGISTRATION FORM (PDF)
             </button>
-            <button className="mf-submit mf-submit-inline" type="button" onClick={resetForm}>
-              Register Another Child
+            <button className="mf-submit mf-submit-inline" type="button" onClick={() => { window.location.href = '/' }}>
+              RETURN TO HOMEPAGE
             </button>
           </div>
         </section>
