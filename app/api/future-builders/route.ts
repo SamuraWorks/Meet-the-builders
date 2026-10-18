@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto'
+
 export const runtime = 'nodejs'
 
 const RECIPIENT = process.env.FUTURE_BUILDERS_EMAIL || 'academyfuturebuilders@gmail.com'
@@ -131,9 +133,9 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, error: validationError }, { status: 400 })
   }
 
-  const apiKey = process.env.API_KEY
+  const apiKey = process.env.RESEND_API_KEY || process.env.API_KEY
   if (!apiKey) {
-    console.error('[future-builders] Missing Resend API key (API_KEY).')
+    console.error('[future-builders] Missing Resend API key (RESEND_API_KEY).')
     return Response.json({ ok: false, error: 'Email is not configured.' }, { status: 500 })
   }
 
@@ -141,6 +143,9 @@ export async function POST(request: Request) {
   const childName = str(answers.childName)
   const safeName = childName.replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_')
   const rows = buildRows(data)
+  const idempotencyKey = `future-builders/${createHash('sha256')
+    .update(JSON.stringify({ answers, pdfBase64: data.pdfBase64 }))
+    .digest('hex')}`
 
   try {
     const resendResponse = await fetch('https://api.resend.com/emails', {
@@ -148,7 +153,7 @@ export async function POST(request: Request) {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'Idempotency-Key': `future-builders/${crypto.randomUUID()}`,
+        'Idempotency-Key': idempotencyKey,
       },
       body: JSON.stringify({
         from: 'Builda Robotics Day <onboarding@resend.dev>',
