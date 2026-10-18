@@ -147,14 +147,18 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, error: validationError }, { status: 400 })
   }
 
-  const user = process.env.SMTP_USER || 'academyfuturebuilders@gmail.com'
-  const pass = process.env.SMTP_PASS?.replace(/\s+/g, '')
+  const user = (process.env.SMTP_USER || 'academyfuturebuilders@gmail.com').trim()
+  const pass = (process.env.SMTP_PASS || process.env.SMTP_PASSWORD || '').replace(/\s+/g, '')
 
   if (!user || !pass) {
-    console.error(
-      '[future-builders] Missing SMTP credentials. Set SMTP_USER and SMTP_PASS in your environment.',
+    console.error('[future-builders] Missing SMTP credentials.', {
+      hasUser: Boolean(user),
+      hasPassword: Boolean(pass),
+    })
+    return Response.json(
+      { ok: false, error: 'Email delivery is temporarily unavailable. Please try again shortly.' },
+      { status: 503 },
     )
-    return Response.json({ ok: false, error: 'Email is not configured.' }, { status: 500 })
   }
 
   const answers = (data.answers ?? {}) as Record<string, string>
